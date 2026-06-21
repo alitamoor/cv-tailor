@@ -1,0 +1,155 @@
+# profile.yaml schema
+#
+# This is the annotated schema — the template that interactive setup fills in.
+# The actual file lives in your data directory (my-cv-tailor-data/profile.yaml),
+# NOT in this repo. See README.md for the data directory setup.
+#
+# Every field below maps to a rule or behavior in the workflow files.
+# Comments explain what each field does and when it matters.
+
+person:
+  name: ""
+  # Used in output file naming and to personalise setup prompts.
+
+  target_role_family: ""
+  # e.g. "Sales Engineer", "Product Manager", "Senior Software Engineer"
+  # Used for career-alignment scoring and tone calibration.
+  # If you're targeting multiple role families, pick the primary one.
+
+
+behavioral_tone:
+  di_profile: null
+  # Optional. If you have a DI/DISC assessment, enter your scores like:
+  #   D: 72
+  #   I: 58
+  #   S: 34
+  #   C: 41
+  # Claude uses this to calibrate assertiveness, warmth, pace in the profile paragraph.
+  # Leave null if you don't have one — Claude will infer from your framing notes.
+
+  notes: ""
+  # Freeform tone instruction. Setup asks this conversationally.
+  # Example: "Lead with commercial impact first — I'm a builder who also closes.
+  # Avoid 'team player' framing; my differentiator is individual deal ownership."
+
+  never_say:
+    - ""
+  # Phrases you specifically want avoided, beyond the defaults in rules/anti-ai.md.
+  # E.g.: "passionate about", "results-driven", "thought leader"
+
+
+anti_ai_rules_file: "rules/anti-ai.md"
+# Points at the Voice DNA doc shipped with this repo.
+# Fork it to a custom file if you want different defaults.
+# The file must be readable from the repo root.
+
+anti_ai_cv_addendum_file: "rules/anti-ai-cv-addendum.md"
+# CV-specific additions. Rarely needs editing — these are universal bullet conventions.
+
+
+fit_scoring:
+  weights:
+    skills_match: 40
+    experience_match: 30
+    culture_fit: 15
+    career_alignment: 15
+  # Must sum to 100. Adjust to reprioritise what matters most for your job search.
+
+  minimum_to_proceed: 55
+  # Percentage. Below this score Claude stops and asks before building.
+  # Lower it if you're targeting stretch roles. Raise it to filter harder.
+
+
+experience:
+  - employer: ""
+    title: ""
+    dates: ""
+    # Format: "Jan 2020 – Mar 2023" or "2020–2023". Pick one style and use it throughout.
+
+    location: ""
+    # "City, State" or "Remote"
+
+    max_bullets: 4
+    # Maximum bullets to include for this role in any tailored CV.
+    # Typical: 4 for the most recent or most relevant role, 2–3 for earlier ones.
+
+    always_keep_metrics:
+      - ""
+    # Specific numbers or achievements that must appear verbatim in every CV, never dropped or altered.
+    # E.g.: "$4.2M in ARR closed in FY2023"
+
+    framing_notes: ""
+    # How you want this role positioned. E.g.:
+    # "Emphasise technical depth — I was often the only SE on 7-figure deals."
+    # "Startup/entrepreneurial framing, use CPO not CEO."
+
+  # Add one block per employer, in reverse chronological order.
+
+
+education:
+  - degree: ""
+    institution: ""
+    dates: ""
+    never_change: true
+    # If true, Claude never alters degree name, institution, or dates.
+
+    omit_from_profile: false
+    # If true, this entry is excluded from the profile paragraph AND from any
+    # profile-summary text. It still appears in the Education section.
+    # Use for degrees you'd rather address in conversation than have front-and-centre.
+
+    omit_reason: ""
+    # Optional note to yourself on why. Claude doesn't use this — it's for your reference.
+
+  # Add one block per degree/certification.
+
+
+languages:
+  - ""
+  # Format: "English (native)", "French (professional proficiency)"
+  # Claude never alters language entries — they're listed as-is.
+
+
+awards:
+  - ""
+  # E.g.: "President's Club — Acme Corp, 2022 and 2023"
+  # Listed as-is; Claude includes them where relevant but doesn't reword them.
+
+
+differentiators:
+  - text: ""
+    weight_hint: ""
+    # text: the differentiator itself, written as you'd say it.
+    # weight_hint: when this differentiator is most relevant.
+    # E.g.:
+    #   text: "Closed $4.2M ARR solo — no AE partnership — in FY2023"
+    #   weight_hint: "Use for senior IC roles where the JD values individual deal ownership"
+    #
+    # Claude picks 1-2 per JD based on weight_hints. Never lists all of them.
+
+  # Add 3–5 differentiators in total.
+
+
+source_cv:
+  path: "source/CV_FirstName_LastName.docx"
+  # Relative to your data directory (my-cv-tailor-data/).
+  # Supports .docx (preferred, enables unpack/repack) or .pdf (triggers JS-fallback).
+
+  format: "docx"
+  # "docx" or "pdf"
+
+
+output:
+  naming_pattern: "CV_{first}_{last}_{company}.docx"
+  # Tokens: {first}, {last} (from person.name), {company} (from the JD).
+
+  max_pages: 2
+  # Claude trims content rather than shrinking font to fit. Hard limit.
+
+
+environment:
+  mode: "auto"
+  # "agent"  — Claude Code or Cowork; enables agent-spawning, bash execution, docx building.
+  # "inline" — claude.ai or any environment without tool execution; reviewer runs inline,
+  #            docx build outputs edit instructions instead of executing them.
+  # "auto"   — Claude detects from available tools. Use this unless you have a reason not to.

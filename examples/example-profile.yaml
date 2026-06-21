@@ -1,0 +1,137 @@
+# Example profile — fictional person (Alex Chen)
+# This shows what your profile.yaml looks like after running setup.
+# Every field is filled. Use this as a reference while reviewing your own.
+
+person:
+  name: "Alex Chen"
+  target_role_family: "Sales Engineer"
+
+behavioral_tone:
+  di_profile:
+    D: 72
+    I: 58
+    S: 34
+    C: 41
+  notes: >
+    Lead with commercial impact first — Alex is a builder who also closes.
+    Avoid "team player" framing; the differentiator is individual deal ownership.
+    Confident, not boastful. Specific, not vague. Startup credibility matters
+    for growth-stage roles.
+  never_say:
+    - "passionate about"
+    - "results-driven"
+    - "thought leader"
+    - "self-starter"
+
+anti_ai_rules_file: "rules/anti-ai.md"
+anti_ai_cv_addendum_file: "rules/anti-ai-cv-addendum.md"
+
+fit_scoring:
+  weights:
+    skills_match: 40
+    experience_match: 30
+    culture_fit: 15
+    career_alignment: 15
+  minimum_to_proceed: 55
+
+experience:
+  - employer: "Meridian Data Systems"
+    title: "Senior Sales Engineer"
+    dates: "Mar 2021 – Present"
+    location: "Austin, TX"
+    max_bullets: 4
+    always_keep_metrics:
+      - "$4.2M in ARR closed in FY2023"
+      - "reduced average sales cycle from 94 to 61 days"
+    framing_notes: >
+      Emphasise technical depth — Alex was often the only SE on 7-figure deals.
+      This is a revenue-generating role, not a support role.
+      Don't undersell the deal complexity: average deal size $800K+, 6-month cycles.
+
+  - employer: "Apex Analytics"
+    title: "Solutions Engineer"
+    dates: "Jun 2018 – Feb 2021"
+    location: "Remote"
+    max_bullets: 3
+    always_keep_metrics:
+      - "90% proof-of-concept win rate across 47 enterprise evaluations"
+    framing_notes: >
+      Early-stage startup (Series A when Alex joined). Alex built the SE function
+      from scratch — first pre-sales hire. Frame as founder-level ownership,
+      not just contributor. The 47 evaluations stat is the headline.
+
+  - employer: "NovaTech Inc."
+    title: "Technical Support Engineer"
+    dates: "Aug 2016 – May 2018"
+    location: "San Francisco, CA"
+    max_bullets: 2
+    always_keep_metrics:
+      - "reduced ticket resolution time by 38%"
+    framing_notes: >
+      Context-setting role only. Don't over-index on support work.
+      Emphasise the transition into customer-facing technical selling
+      and the API/integration depth that came from this role.
+
+education:
+  - degree: "B.Sc. Computer Science"
+    institution: "University of Texas at Austin"
+    dates: "2012–2016"
+    never_change: true
+    omit_from_profile: false
+    omit_reason: ""
+
+  - degree: "Certified Kubernetes Administrator (CKA)"
+    institution: "Cloud Native Computing Foundation"
+    dates: "2022"
+    never_change: true
+    omit_from_profile: false
+    omit_reason: ""
+
+languages:
+  - "English (native)"
+  - "Mandarin (conversational)"
+
+awards:
+  - "President's Club — Meridian Data Systems, 2022 and 2023"
+  - "Top 5% Sales Engineer globally — Meridian Data Systems, FY2023"
+
+differentiators:
+  - text: >
+      Closed $4.2M ARR solo in FY2023 — no dedicated AE partnership —
+      handling both technical and commercial stages of the deal.
+    weight_hint: >
+      Use for senior IC or player-coach roles where the JD values
+      individual deal ownership and revenue accountability.
+
+  - text: >
+      Built the SE function from scratch at Apex Analytics: first pre-sales hire,
+      created the POC framework, documented the process, achieved 90% win rate
+      across 47 enterprise evaluations.
+    weight_hint: >
+      Use for roles requiring SE leadership, team building,
+      or startup/scaleup experience where they're building a function.
+
+  - text: >
+      90% POC win rate across 47 enterprise evaluations — consistently converts
+      technical evaluation to signed contract, not just demo delivery.
+    weight_hint: >
+      Use when the JD emphasises conversion, technical sales depth,
+      or enterprise deal complexity.
+
+  - text: >
+      Kubernetes-certified — can demo at infrastructure level, not just API level.
+      Credible to DevOps teams, platform engineers, and CTO buyers.
+    weight_hint: >
+      Use for DevOps platform, cloud-native, infrastructure-adjacent,
+      or developer tooling sales roles.
+
+source_cv:
+  path: "source/CV_Alex_Chen.docx"
+  format: "docx"
+
+output:
+  naming_pattern: "CV_{first}_{last}_{company}.docx"
+  max_pages: 2
+
+environment:
+  mode: "auto"
