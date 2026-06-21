@@ -18,17 +18,33 @@ Keep it short. Don't list every feature. Get to the questions.
 
 ---
 
-## Step B — Source CV
+## Step B — Source material
 
-Ask the user to share their current CV. They can upload a file or paste the text.
+Ask the user to share their current career history. Several formats work — accept whatever they have:
 
-- `.docx` is preferred — it enables direct formatting preservation (unpack/edit/repack).
-- `.pdf` works, but the CV will be rebuilt from a clean template since PDFs can't be edited in place.
+- **`.docx` upload** — preferred if they want docx output, because it enables formatting preservation (unpack/edit/repack). Set `source_cv.format: docx`.
+- **`.pdf` upload** — works as a content source. Note that docx formatting can't be preserved from a PDF, so the natural output is LaTeX (see Step B2). Set `source_cv.format: pdf`.
+- **LinkedIn PDF export** — they go to their LinkedIn profile → "Resources" → "Save to PDF," then upload or paste the text. Extract roles, dates, and descriptions from it. Treat as `pdf`.
+- **Work-history blob** — free-form pasted text describing roles, companies, dates, and outcomes. Perfectly fine; you'll structure it into `profile.yaml` directly. No source file in this case — set `source_cv.format: none` and skip `source_cv.path`.
 
-When they upload:
+The source material feeds two things: the structured facts you write into `profile.yaml` (Steps C onward), and — for docx output only — the formatting template used at build time.
+
+When they share a file:
 - Confirm the format and note it for `source_cv.format`.
 - Ask where they'd like to save it (default: `my-cv-tailor-data/source/`).
 - Note the filename for `source_cv.path`.
+
+---
+
+## Step B2 — Output format
+
+Ask: "When I tailor a CV, do you want it as a **Word document (.docx)** keeping your existing formatting, or a clean **PDF built from LaTeX** (single-page, ATS-safe, compiled in Overleaf with one click)?"
+
+- If they want docx and uploaded a docx → `output.format: docx`. Best of both: their formatting, preserved.
+- If they want a polished PDF, or only have a PDF/LinkedIn/blob source → `output.format: latex`. Builds from structured data, no source formatting needed.
+- If unsure → recommend `latex` for anyone without a well-formatted docx already, `docx` for anyone who likes their current CV's look.
+
+Note this for `output.format`. Set `output.naming_pattern`'s extension to match (`.docx` or `.tex`).
 
 ---
 

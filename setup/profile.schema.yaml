@@ -133,15 +133,24 @@ differentiators:
 source_cv:
   path: "source/CV_FirstName_LastName.docx"
   # Relative to your data directory (my-cv-tailor-data/).
-  # Supports .docx (preferred, enables unpack/repack) or .pdf (triggers JS-fallback).
+  # Omit if format is "none" (blob/LinkedIn-text input with no source file).
 
   format: "docx"
-  # "docx" or "pdf"
+  # "docx"  — enables formatting preservation (unpack/edit/repack) for docx output.
+  # "pdf"   — content source only; docx formatting can't be preserved from a PDF.
+  # "none"  — no source file (work-history blob or LinkedIn text pasted at setup).
 
 
 output:
+  format: "docx"
+  # "docx"  — Word document. Preserves your source docx formatting (requires a docx source).
+  # "latex" — single-page PDF built from LaTeX via scripts/render_latex.py.
+  #           Builds from structured data; no source formatting needed. Compile in Overleaf
+  #           or with a local pdflatex. Recommended if you don't have a well-formatted docx.
+
   naming_pattern: "CV_{first}_{last}_{company}.docx"
   # Tokens: {first}, {last} (from person.name), {company} (from the JD).
+  # Set the extension to match output.format: ".docx" for docx, ".tex" for latex.
 
   max_pages: 2
   # Claude trims content rather than shrinking font to fit. Hard limit.

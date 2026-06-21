@@ -16,7 +16,7 @@ These apply to every CV built by this system. They're not user-configurable — 
 
 ## Bullet format
 
-**Use standard list bullets only.** The `docx` npm package uses `LevelFormat.BULLET` (produces "•"). The unpack/repack path preserves whatever list format the source CV uses — if that source uses unicode characters (→, ✓, ▪, ◆), replace them with standard Word list bullets.
+**Use standard list bullets only.** The docx unpack/repack path preserves whatever list format the source CV uses — if that source uses unicode characters (→, ✓, ▪, ◆), replace them with standard Word list bullets. The LaTeX path uses the template's native `\resumeItem` bullets, which render as standard dots.
 
 **Never use unicode bullet characters directly in text.** Characters like → ✓ ▪ ◆ ▸ render fine visually but parse inconsistently. Use the Word/docx list format instead.
 

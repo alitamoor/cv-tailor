@@ -1,12 +1,21 @@
-# Step 6 — Build docx
+# Step 6 — Build the document
 
-This step branches based on source CV format and environment mode.
+This step branches on `profile.yaml: output.format` (`docx` or `latex`) and `environment.mode`.
+
+Pick the path:
+
+| output.format | source | mode | Path |
+|---|---|---|---|
+| `docx` | docx available | agent | **A — unpack/repack** (preserves formatting) |
+| `docx` | PDF only | agent | **B — no docx source** (offer LaTeX or ask for a docx) |
+| `latex` | any | agent | **C — LaTeX render** |
+| any | — | inline | **D — inline output** |
 
 ---
 
-## Agent mode + docx source — unpack → edit XML → repack
+## Path A — Agent mode, docx output, docx source: unpack → edit XML → repack
 
-**Condition:** `environment.mode == "agent"` AND `source_cv.format == "docx"` AND the file at `source_cv.path` is readable.
+**Condition:** `environment.mode == "agent"` AND `output.format == "docx"` AND `source_cv.format == "docx"` AND the file at `source_cv.path` is readable.
 
 This path preserves your exact formatting — fonts, spacing, margins, line heights — by editing the document XML in place rather than rebuilding from scratch.
 
@@ -37,35 +46,79 @@ This path preserves your exact formatting — fonts, spacing, margins, line heig
 
 ---
 
-## Agent mode + PDF source — JS rebuild fallback
+## Path B — Agent mode, docx output, but no usable docx source
 
-**Condition:** `environment.mode == "agent"` AND `source_cv.format == "pdf"` (or docx is structurally unparseable).
+**Condition:** `output.format == "docx"` AND `source_cv.format == "pdf"` (or the docx is structurally unparseable).
 
-Tell the user: "Your source CV is a PDF, so I can't preserve your exact formatting. I'll build a clean ATS-safe docx using a standard template — Arial, US Letter, standard section structure."
+You can't preserve docx formatting from a PDF — there's no XML to edit. Don't rebuild a generic docx from scratch; it loses the whole point of the docx path. Instead, tell the user:
 
-Write and execute a Node.js script using the `docx` npm package. The output must meet these specs:
+> "Your source CV is a PDF, so I can't preserve its exact docx formatting. Two options: (1) I build a clean, single-page PDF via LaTeX (you compile it in Overleaf in one click), or (2) you upload your CV as a .docx and I preserve your existing formatting. Which do you want?"
 
-- **Font:** Arial or Calibri, 11pt body, 12pt section headers
-- **Page size:** US Letter (8.5" × 11"), 1" margins on all sides
-- **Section headers:** bold, 12pt, title case per `rules/ats-rules.md` conventions
-- **Bullets:** use `LevelFormat.BULLET` — never unicode bullet characters in text nodes
-- **No tables, text boxes, or images**
-- **Hyperlinks:** LinkedIn URL and email as proper `ExternalHyperlink` elements, URL visible as text
-- **Section order:** Profile | Professional Experience | Education | Languages (if present) | Awards (if present)
-- **Max pages:** per `profile.yaml: output.max_pages`
-
-The fallback must still produce a professional, clean document. It's not an afterthought — it's the only output PDF users get.
+- If they pick LaTeX → switch to **Path C**.
+- If they'll provide a docx → wait for it, then use **Path A**.
 
 ---
 
-## Inline mode — edit instructions
+## Path C — Agent mode, LaTeX output
+
+**Condition:** `environment.mode == "agent"` AND `output.format == "latex"` (or the user chose LaTeX in Path B).
+
+LaTeX builds from the tailored content directly — it doesn't read the source CV at all. The result is a clean, single-page, ATS-safe PDF the user compiles in Overleaf or locally.
+
+### Steps
+
+1. Assemble the tailored content into a JSON file. Use the rewritten bullets (step 4), the profile paragraph (step 5), and the static facts from `profile.yaml` (name, contact, education, languages, awards, certifications). Shape:
+
+   ```json
+   {
+     "name": "...",
+     "contact": {"phone": "", "email": "", "linkedin": "", "portfolio": "", "github": ""},
+     "summary": "<profile paragraph from step 5>",
+     "experience": [
+       {"title": "", "employer": "", "dates": "", "location": "",
+        "bullets": ["<tailored bullet>", "..."]}
+     ],
+     "skills": {"Category": ["..."]},
+     "education": [{"degree": "", "institution": "", "dates": "", "location": ""}],
+     "certifications": ["..."],
+     "awards": ["..."],
+     "languages": ["..."]
+   }
+   ```
+
+   - `skills` can be a flat list or a category→list dict.
+   - Respect `omit_from_profile`: an omitted education entry still goes in `education` (it belongs in the Education section), but its degree/institution must not appear in `summary`.
+   - Drop any section by omitting its key (e.g., no awards → leave out `awards`).
+
+   Write the JSON to `/tmp/resume_content.json`.
+
+2. Render the `.tex`:
+   ```
+   python scripts/render_latex.py --content /tmp/resume_content.json --output <output_path>
+   ```
+   where `output_path` follows `profile.yaml: output.naming_pattern` (with a `.tex` extension) in the user's `output/<Company Name>/` directory.
+
+   The script escapes LaTeX special characters (`$ & % # _ { } ~ ^`) automatically — don't pre-escape them in the JSON.
+
+3. Compile to PDF if a LaTeX distribution is available:
+   ```
+   pdflatex -interaction=nonstopmode -output-directory <output_dir> <output_path>
+   ```
+   - If `pdflatex` is installed, run it twice (LaTeX needs a second pass for layout) and report the PDF path.
+   - If `pdflatex` is not installed, tell the user: "The .tex is ready at [path]. To get a PDF: upload it to [Overleaf](https://www.overleaf.com), set the compiler to pdfLaTeX, and click Recompile. Or install MiKTeX/TeX Live to compile locally."
+
+4. Confirm the file(s) created. Report the full path(s).
+
+---
+
+## Path D — Inline mode (claude.ai or no code execution)
 
 **Condition:** `environment.mode == "inline"` (or code execution is unavailable).
 
-You can't execute code here, so instead:
+You can't run scripts here, so deliver the content for the user to apply or compile themselves.
 
-**If source is docx:**
-Produce a clear, section-by-section edit list the user can apply manually in Word or Google Docs:
+**If `output.format == "docx"` and source is docx:**
+Produce a clear, section-by-section edit list the user applies manually in Word or Google Docs:
 
 ```
 PROFILE PARAGRAPH
@@ -80,7 +133,9 @@ Bullet 2: Replace with:
 ...
 ```
 
-**If source is PDF (inline mode):**
-Produce the full CV as clean plain text, structured for manual copy-paste into a Word template. Lay it out in the correct section order per `rules/ats-rules.md`. Note that the user will need to apply their own formatting.
+**If `output.format == "latex"` (or source is PDF):**
+Output the complete `.tex` file as a code block. Build it from the same content as Path C — apply the LaTeX template structure from `templates/resume_template.tex` and escape special characters by hand (`$`→`\$`, `&`→`\&`, `%`→`\%`, `#`→`\#`, `_`→`\_`). Then tell the user:
 
-In both cases: tell the user what you've done and why ("I can't build the file directly in this environment, so here are the exact changes to make").
+> "Here's your resume as LaTeX. Copy it into a new [Overleaf](https://www.overleaf.com) project (set compiler to pdfLaTeX) and click Recompile to get your PDF."
+
+In every inline case: tell the user what you've done and why ("I can't build the file directly in this environment, so here's the content to apply").

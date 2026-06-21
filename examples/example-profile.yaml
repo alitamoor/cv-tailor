@@ -130,6 +130,7 @@ source_cv:
   format: "docx"
 
 output:
+  format: "docx"          # Alex has a well-formatted docx, so preserve it. Use "latex" for a clean PDF instead.
   naming_pattern: "CV_{first}_{last}_{company}.docx"
   max_pages: 2
 

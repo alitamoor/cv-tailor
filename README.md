@@ -1,8 +1,8 @@
 # cv-tailor
 
-Paste a job description. Get a tailored, ATS-safe, fabrication-free CV in your own formatting.
+Paste a job description. Get a tailored, ATS-safe, fabrication-free CV — as a Word doc in your own formatting, or a clean single-page PDF built from LaTeX.
 
-cv-tailor is a Claude skill — a set of instruction files that guide Claude through a structured tailoring workflow. It scores fit, extracts keywords, rewrites bullets with the right metrics and JD language, rebuilds your docx file preserving your formatting, and runs a reviewer pass before finishing. Works in Claude Code (full workflow with agent reviewer and file output) and claude.ai (inline reviewer, edit instructions instead of file output).
+cv-tailor is a Claude skill — a set of instruction files that guide Claude through a structured tailoring workflow. It scores fit, extracts keywords, rewrites bullets with the right metrics and JD language, builds the document (preserving your docx formatting or rendering fresh LaTeX), and runs a reviewer pass before finishing. Works in Claude Code (full workflow with agent reviewer and file output) and claude.ai (inline reviewer, edit instructions or copy-paste LaTeX instead of file output).
 
 ---
 
@@ -13,20 +13,20 @@ cv-tailor is a Claude skill — a set of instruction files that guide Claude thr
 3. **Gap analysis** — maps JD requirements to your profile. Surfaces real gaps honestly; never covers them with invented experience.
 4. **Bullet rewrite** — rewrites bullets per JD using STAR structure and active verbs. Stops and asks if any bullet is missing a metric. Never invents numbers.
 5. **Profile paragraph** — ~80 words, opens with the JD title, includes your biggest relevant metric and 1–2 differentiators chosen for this specific role.
-6. **Docx build** — edits your source docx XML in place (preserving fonts, spacing, layout) or rebuilds from a clean ATS-safe template if you only have a PDF.
+6. **Document build** — two output formats: **docx** (edits your source docx XML in place, preserving fonts, spacing, and layout) or **LaTeX** (renders a clean, single-page, ATS-safe `.tex` you compile to PDF in Overleaf or locally). Gap analysis also records an honest ceiling — the highest credible score for this JD given your real experience.
 7. **Reviewer pass** — spawns a fresh reviewer (agent mode) or runs a self-critique (inline mode) to catch generic language, unverified company claims, and AI writing tics before the file is saved.
 8. **Self-audit** — scans against banned word lists, checks every bullet for a number, verifies omit-from-profile flags, checks ATS structure, and runs a Voice DNA litmus test.
-9. **Output** — saves the file, shows a before/after diff, flags any open items.
+9. **Output** — saves the file, shows a before/after diff, reports the honest ceiling, flags any open items.
 
 ---
 
 ## Prerequisites
 
 - **Claude Code** or **claude.ai** (claude.ai covers inline mode; Claude Code covers the full workflow)
-- **Python 3.9+** — for the docx unpack/repack scripts (`scripts/unpack.py`, `scripts/pack.py`)
-- **Node.js 18+** and the `docx` npm package — only needed for the JS-fallback path (PDF source CVs in agent mode)
+- **Python 3.9+** — for the build scripts (`scripts/unpack.py`, `scripts/pack.py` for docx; `scripts/render_latex.py` for LaTeX). Standard library only, no pip installs.
+- **A LaTeX distribution** — only if you choose LaTeX output and want to compile to PDF locally ([MiKTeX](https://miktex.org) or [TeX Live](https://tug.org/texlive/)). Or skip it and compile in [Overleaf](https://www.overleaf.com) for free with one click.
 
-No API keys. No external services. Everything runs in your Claude session.
+No API keys. No external services. No npm. Everything runs in your Claude session.
 
 ---
 
@@ -43,7 +43,7 @@ cd cv-tailor
 mkdir -p ../my-cv-tailor-data/source ../my-cv-tailor-data/output
 ```
 
-Copy your current CV (`.docx` preferred, `.pdf` works) into `../my-cv-tailor-data/source/`.
+Add your career history in whatever form you have it: a `.docx` (preferred for docx output), a `.pdf`, a LinkedIn PDF export, or just a pasted work-history blob during setup. Put any file into `../my-cv-tailor-data/source/`.
 
 **3. Run setup**
 
@@ -91,8 +91,9 @@ The repo contains only instruction files and scripts. No personal data, employer
 | Fit scoring | Yes | Yes |
 | Keyword extraction | Yes | Yes |
 | Bullet + profile rewrite | Yes | Yes |
-| Docx build (unpack/repack) | Yes — file written directly | No — edit instructions provided |
-| Docx build (JS fallback) | Yes — script executed | No — plain text output |
+| Docx output (unpack/repack) | Yes — file written directly | No — edit instructions provided |
+| LaTeX output (render + compile) | Yes — `.tex` written, PDF if pdflatex present | No — `.tex` provided to copy into Overleaf |
+| Honest ceiling report | Yes | Yes |
 | Reviewer | Spawns general-purpose agent | Self-critique, inline |
 | File saved to disk | Yes | No (user applies changes manually) |
 
@@ -104,10 +105,11 @@ The repo contains only instruction files and scripts. No personal data, employer
 my-cv-tailor-data/         ← lives outside the repo, never committed
 ├── profile.yaml           ← written by interactive setup
 ├── source/
-│   └── CV_YourName.docx   ← your source CV
+│   └── CV_YourName.docx   ← your source CV (optional for LaTeX output)
 └── output/
     └── CompanyName/
-        └── CV_You_Company.docx
+        ├── CV_You_Company.docx   ← docx output, or
+        └── CV_You_Company.tex    ← LaTeX output (+ .pdf if compiled)
 ```
 
 ---
